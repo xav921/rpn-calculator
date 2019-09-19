@@ -1,7 +1,6 @@
 package edu.cnm.deepdive;
 
 import java.io.InputStream;
-import java.io.Writer;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -17,17 +16,21 @@ public class Calculator {
   public void process(InputStream in) {
     Deque<Double> operands = new LinkedList<>();
     try (Scanner scanner = new Scanner(in)) {
-      while (scanner.hasNextDouble()) {
-        operands.push(scanner.nextDouble());
+      String pattern = Operator.tokenPattern();
+      while (scanner.hasNext()) {
+        if (scanner.hasNextDouble()) {
+          operands.push(scanner.nextDouble());
+        } else if (scanner.hasNext(pattern)) {
+          Operator.operate(scanner.next(pattern), operands);
+        } else {
+          throw new IllegalArgumentException(scanner.next());
+        }
       }
     } catch (NoSuchElementException ignored) {
-      // End of input; complete processing
+      // End of input; complete processing.
     } finally {
       System.out.println(operands);
-      if (scanner != null) {
-      scanner.close();
     }
-  }
   }
 
 }
