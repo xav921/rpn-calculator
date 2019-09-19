@@ -4,10 +4,11 @@ import java.util.Deque;
 
 /**
  * Enumerated values representing operators in a postfix (RPN) calculator. Each operator has a token
- * that is used to recognize the operator in a input string, and to represent the operator in  an
+ * that is used to recognize the operator in an input string, and to represent the operator in an
  * output string.
  */
 public enum Operator {
+
   /** Pops 2 values from stack, pushes sum of the 2 back onto stack. */
   ADD("+"),
   /** Pops 2 values from stack, pushes difference of the 2 back onto stack. */
@@ -16,8 +17,13 @@ public enum Operator {
   MULTIPLY("*"),
   /** Pops 2 values from stack, pushes quotient (real) of the 2 back onto stack. */
   DIVIDE("/"),
-  /** Pops 2 values from stack, pushes its square root back onto stack. */
-  SQUARE_ROOT("sqrt"),
+  /** Pops 1 value from stack, pushes its square root back onto stack. */
+  SQUARE_ROOT("sqrt") {
+    @Override
+    protected boolean needsEscape() {
+      return false;
+    }
+  },
   /** Pops 2 values from stack, pushes the value of 1st raised to the second back onto stack. */
   POWER("^"),
   /** Pops 2 values from stack, pushes remainder after truncated division of the 2 back onto stack. */
@@ -34,8 +40,19 @@ public enum Operator {
     return token;
   }
 
+  protected boolean needsEscape() {
+    return true;
+  }
+
   public static String tokenPattern() {
-    return "(?<=^|\\\\s)(\\\\+|\\\\-|\\\\*|\\\\/|\\\\^|\\\\%|sqrt)(?=\\\\s|$)";
+    String pattern = "";
+    for (Operator op : values()) {
+      if (op.needsEscape()) {
+        pattern += "\\";
+      }
+      pattern += op.token + "|";
+    }
+    return String.format("(?<=^|\\s)%s(?=\\s|$)", pattern.substring(0, pattern.length() - 1));
   }
 
   public static void operate(String token, Deque<Double> operands) {
@@ -75,7 +92,5 @@ public enum Operator {
     }
     operands.push(result);
   }
-
-  // TODO Add operate method w/ switch (later version will use at @override).
 
 }
